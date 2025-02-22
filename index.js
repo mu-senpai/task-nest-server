@@ -95,12 +95,11 @@ app.get('/tasks', async (req, res) => {
 app.patch('/tasks/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const { title, description, category } = req.body;
+        const { title, description } = req.body;
 
         const updatedTask = {};
         if (title !== undefined) updatedTask.title = title;
         if (description !== undefined) updatedTask.description = description;
-        if (category !== undefined) updatedTask.category = category;
 
         if (Object.keys(updatedTask).length === 0) {
             return res.status(400).send({ message: "No valid fields to update." });
