@@ -59,7 +59,7 @@ app.post('/tasks', async (req, res) => {
 
         const newTask = {
             title,
-            description: description?.slice(0, 200) || "",
+            description: description || "",
             timestamp: new Date(),
             category: category || "To-Do",
             userId,
@@ -92,6 +92,33 @@ app.get('/tasks', async (req, res) => {
 });
 
 // API for updating a task
+app.put('/tasks/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { title, description, category } = req.body;
+
+        const updatedTask = {
+            ...(title && { title: title }),
+            ...(description && { description: description }),
+            ...(category && { category })
+        };
+
+        const result = await taskCollection.updateOne(
+            { _id: new ObjectId(id) },
+            { $set: updatedTask }
+        );
+
+        if (result.modifiedCount === 0) {
+            return res.status(404).send({ message: "Task not found" });
+        }
+
+        res.send({ success: true, message: "Task updated successfully" });
+    } catch (error) {
+        res.status(500).send({ message: "Failed to update task", error });
+    }
+});
+
+// API for reordering a task
 app.put('/tasks/reorder', async (req, res) => {
     try {
         const { reorderedTasks } = req.body;
