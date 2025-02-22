@@ -92,16 +92,19 @@ app.get('/tasks', async (req, res) => {
 });
 
 // API for updating a task
-app.put('/tasks/:id', async (req, res) => {
+app.patch('/tasks/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const { title, description, category } = req.body;
 
-        const updatedTask = {
-            ...(title && { title: title }),
-            ...(description && { description: description }),
-            ...(category && { category })
-        };
+        const updatedTask = {};
+        if (title !== undefined) updatedTask.title = title;
+        if (description !== undefined) updatedTask.description = description;
+        if (category !== undefined) updatedTask.category = category;
+
+        if (Object.keys(updatedTask).length === 0) {
+            return res.status(400).send({ message: "No valid fields to update." });
+        }
 
         const result = await taskCollection.updateOne(
             { _id: new ObjectId(id) },
@@ -109,7 +112,7 @@ app.put('/tasks/:id', async (req, res) => {
         );
 
         if (result.modifiedCount === 0) {
-            return res.status(404).send({ message: "Task not found" });
+            return res.status(404).send({ message: "Task not found or no changes made." });
         }
 
         res.send({ success: true, message: "Task updated successfully" });
